@@ -1,0 +1,113 @@
+name: $(Build.Repository.Name)-$(Build.SourceBranchName)
+
+trigger:
+  branches:
+    include:
+      - '*'
+  paths:
+    exclude:
+      - README.md
+
+parameters:
+  - name: Action
+    displayName: Action
+    type: string
+    default: 'Plan'
+    values:
+    - Plan
+    - Apply
+    - Destroy
+
+pool: Azure Pipelines
+
+resources:
+  repositories:
+    - repository: PipelineTemplates
+      type: github
+      name: przemekgorzynski/PipelineTemplates
+
+
+variables:
+  - name: TargetSubscriptionID
+    readonly: true
+    value: 74c23fa0-9cc4-4b39-a3c3-e57a5b3f01e0
+  - name: ServiceConnection
+    readonly: true
+    value: "take a seat (74c23fa0-9cc4-4b39-a3c3-e57a5b3f01e0)"
+  - name: BackendStorage_resource_group_name
+    readonly: true
+    value: ts-iac-weu-terraform-states
+  - name: BackendStorage_storage_account_name
+    readonly: true
+    value: storage4tfstatefile
+  - name: BackendStorage_container_name
+    readonly: true
+    value: tfstate
+  - name: BackendStorage_key
+    readonly: true
+    value: dev.tfstate
+
+
+stages:
+  - stage: Plan
+    condition: eq('${{ parameters.Action }}', 'Plan')
+    dependsOn: []
+    jobs:
+      - job: Plan
+        steps:
+          - template: Azure_DevOps/terraform/init.yaml@PipelineTemplates
+            parameters:
+              TargetSubscriptionID: ${{ variables.TargetSubscriptionID }}
+              ServiceConnection: ${{ variables.ServiceConnection }}
+              BackendStorage_resource_group_name: ${{ variables.BackendStorage_resource_group_name }}
+              BackendStorage_storage_account_name: ${{ variables.BackendStorage_storage_account_name }}
+              BackendStorage_container_name: ${{ variables.BackendStorage_container_name }}
+              BackendStorage_key: ${{ variables.BackendStorage_key }}
+          - template: Azure_DevOps/terraform/plan.yaml@PipelineTemplates
+            parameters:
+              TargetSubscriptionID: ${{ variables.TargetSubscriptionID }}
+              ServiceConnection: ${{ variables.ServiceConnection }}
+              BackendStorage_key: ${{ variables.BackendStorage_key }}
+  - stage: Apply
+    condition: eq('${{ parameters.Action }}', 'Apply')
+    dependsOn: []
+    jobs:
+      - job: Apply
+        steps:
+          - template: Azure_DevOps/terraform/init.yaml@PipelineTemplates
+            parameters:
+              TargetSubscriptionID: ${{ variables.TargetSubscriptionID }}
+              ServiceConnection: ${{ variables.ServiceConnection }}
+              BackendStorage_resource_group_name: ${{ variables.BackendStorage_resource_group_name }}
+              BackendStorage_storage_account_name: ${{ variables.BackendStorage_storage_account_name }}
+              BackendStorage_container_name: ${{ variables.BackendStorage_container_name }}
+              BackendStorage_key: ${{ variables.BackendStorage_key }}
+          - template: Azure_DevOps/terraform/plan.yaml@PipelineTemplates
+            parameters:
+              TargetSubscriptionID: ${{ variables.TargetSubscriptionID }}
+              ServiceConnection: ${{ variables.ServiceConnection }}
+              BackendStorage_key: ${{ variables.BackendStorage_key }}
+          - template: Azure_DevOps/terraform/apply.yaml@PipelineTemplates
+            parameters:
+              TargetSubscriptionID: ${{ variables.TargetSubscriptionID }}
+              ServiceConnection: ${{ variables.ServiceConnection }}
+              BackendStorage_key: ${{ variables.BackendStorage_key }}
+  - stage: Destroy
+    condition: eq('${{ parameters.Action }}', 'Destroy')
+    dependsOn: []
+    pool: Azure Pipelines
+    jobs:
+      - job: Destory
+        steps:
+          - template: Azure_DevOps/terraform/init.yaml@PipelineTemplates
+            parameters:
+              TargetSubscriptionID: ${{ variables.TargetSubscriptionID }}
+              ServiceConnection: ${{ variables.ServiceConnection }}
+              BackendStorage_resource_group_name: ${{ variables.BackendStorage_resource_group_name }}
+              BackendStorage_storage_account_name: ${{ variables.BackendStorage_storage_account_name }}
+              BackendStorage_container_name: ${{ variables.BackendStorage_container_name }}
+              BackendStorage_key: ${{ variables.BackendStorage_key }}
+          - template: Azure_DevOps/terraform/destroy.yaml@PipelineTemplates
+            parameters:
+              TargetSubscriptionID: ${{ variables.TargetSubscriptionID }}
+              ServiceConnection: ${{ variables.ServiceConnection }}
