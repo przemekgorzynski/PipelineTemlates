@@ -1,0 +1,20 @@
+parameters:
+  - name: ServiceConnection
+    type: string
+  - name: WorkingDirectory
+    type: string
+  - name: stage
+    type: string
+  - name: secureVarsFile
+    type: string
+
+steps:
+- task: TerraformCLI@0
+  displayName: 'Terraform Plan'
+  inputs:
+    command: plan
+    environmentServiceName: ${{parameters.ServiceConnection}}
+    workingDirectory: ${{ parameters.WorkingDirectory }}
+    publishPlanResults: 'PlanOutput'
+    secureVarsFile: ${{ parameters.secureVarsFile }}
+    commandOptions: '-var-file=${{ parameters.WorkingDirectory }}/${{ parameters.stage }}.tfvars'

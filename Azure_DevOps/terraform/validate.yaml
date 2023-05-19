@@ -1,0 +1,11 @@
+parameters:
+  - name: WorkingDirectory
+    type: string
+
+steps:
+- task: TerraformCLI@0
+  displayName: 'Terraform Validate'
+  inputs:
+    command: validate
+    workingDirectory: ${{ parameters.WorkingDirectory }}
+    commandOptions: '-json'

@@ -1,0 +1,40 @@
+parameters:
+  - name: TargetSubscriptionID
+    type: string
+  - name: ServiceConnection
+    type: string
+  - name: BackendStorage_resource_group_name
+    type: string
+  - name: BackendStorage_storage_account_name
+    type: string
+  - name: BackendStorage_container_name
+    type: string
+  - name: BackendStorage_key
+    type: string
+  - name: WorkingDirectory
+    type: string
+
+steps:
+- task: TerraformCLI@0
+  displayName: 'Terraform Init'
+  inputs:
+    command: init
+    backendType: azurerm
+    # Service connection to authorize backend access. Supports Subscription & Management Group Scope
+    backendServiceArm: ${{parameters.ServiceConnection}}
+    # Subscription id of the target backend. This can be used to specify the subscription when using Management Group scoped
+    # Service connection or to override the subscription id defined in a Subscription scoped service connection
+    backendAzureRmSubscriptionId: ${{parameters.TargetSubscriptionID}}
+    # create backend storage account if doesn't exist
+    ensureBackend: true
+    backendAzureRmResourceGroupName: ${{parameters.BackendStorage_resource_group_name}}
+    # azure location shortname of the backend resource group and storage account
+    backendAzureRmResourceGroupLocation: 'westeurope'
+    backendAzureRmStorageAccountName: ${{parameters.BackendStorage_storage_account_name}}
+    # azure storage account sku, used when creating the storage account
+    backendAzureRmStorageAccountSku: 'StorageV2'
+    # azure blob container to store the state file
+    backendAzureRmContainerName: ${{parameters.BackendStorage_container_name}}
+    # azure blob file name
+    backendAzureRmKey: ${{parameters.BackendStorage_key}}
+    workingDirectory: ${{parameters.WorkingDirectory}}

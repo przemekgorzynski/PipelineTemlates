@@ -1,0 +1,19 @@
+parameters:
+  - name: ServiceConnection
+    type: string
+  - name: WorkingDirectory
+    type: string
+  - name: stage
+    type: string
+  - name: secureVarsFile
+    type: string
+
+steps:
+- task: TerraformCLI@0
+  displayName: 'Terraform Apply'
+  inputs:
+    command: apply
+    environmentServiceName: ${{parameters.ServiceConnection}}
+    workingDirectory: ${{ parameters.WorkingDirectory }}
+    secureVarsFile: ${{ parameters.secureVarsFile }}
+    commandOptions: '-var-file=${{ parameters.WorkingDirectory }}/${{ parameters.stage }}.tfvars'
