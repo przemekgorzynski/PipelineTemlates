@@ -7,11 +7,6 @@ on:
         required: true
       TF_VAR_private_key_path:
         required: true
-      TF_VAR_private_key_path:
-        required: true
-        
-
-
 
 jobs:
   PEM_File:
