@@ -7,10 +7,16 @@ on:
         required: true
       TF_VAR_private_key_path:
         required: true
+      terraform_path:
+        required: true
 
 jobs:
   PEM_File:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ inputs.terraform_path }}
     steps:
       - uses: DamianReeves/write-file-action@master
         name: Script for key
